@@ -1,5 +1,6 @@
  ./TASCII  --help
-My Rust practice and your cli tools to convert images into ACII text!
+Executable located in target/build
+My Rust practice and your cli tool to convert images into ACII text!
 
 Usage: TASCII [OPTIONS] <FILE_NAME>
 
