@@ -1,5 +1,5 @@
  ./TASCII  --help
-Executable located in target/build
+
 My Rust practice and your cli tool to convert images into ACII text!
 
 Usage: TASCII [OPTIONS] <FILE_NAME>
@@ -16,3 +16,4 @@ Options:
   -o, --output <OUTPUT>  output file name
   -h, --help             Print help
   -V, --version          Print version
+Executable located in target/build
