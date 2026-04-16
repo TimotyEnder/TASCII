@@ -14,7 +14,7 @@ struct Args {
     /// inverts ASCII ramp sequence to make white spots sparse and black spots dense.
     #[arg(short, long)]
     inverted: bool,
-    //increases the image contrast to achieve better quality ASCII with lower dimentions.
+    ///increases the image contrast to achieve better quality ASCII with lower dimentions.
     #[arg(short, long)]
     quality: bool,
     /// width of output if not present, scales according to height if present, set to 200 if not
