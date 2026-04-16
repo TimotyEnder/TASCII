@@ -15,3 +15,4 @@ Options:
   -o, --output <OUTPUT>  output file name   
   -h, --help             Print help  
   -V, --version          Print version  
+![Colored ASCII Art](totoroAscii.png)
