@@ -6,23 +6,23 @@ use image::{
 };
 use std::{env::args, ops::Index, path::Path, process::Output};
 // Raw string with r#"..."# - no escaping needed
-const ASCII_RAMP: &str =
-    r#" .'`^",:;Il!i><~+_-?][}{1)(|\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"#;
+const ASCII_RAMP: &str = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
 /// My Rust practice and your cli tools to convert images into ACII text!
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
     ///path or name of the image file
     file_name: String,
-
-    /// ASCII is greyscale by default but you can add color using this flag!
+    /// Output is greyscale by default but you can add color using this flag!
     #[arg(short, long)]
     color: bool,
-
-    /// width of output
+    /// inverts ASCII ramp sequence to make white spots sparse and black spots dense.
+    #[arg[short,long]]
+    inverted: bool,
+    /// width of output if not present, scales according to height if present, set to 200 if not
     #[arg(short = 'x', long)]
     width: Option<u32>,
-    /// height of output
+    /// height of outputif not present, scales according to width if present, set to 200 if not
     #[arg(short = 'y', long)]
     height: Option<u32>,
     ///output file name
@@ -39,21 +39,33 @@ fn main() {
             return;
         }
     };
-    let mut x = 200;
-    let mut y = 100;
-    /*if args.height.is_some() && !args.width.is_some() {
-        x = img.width() * (args.height.unwrap() / img.height());
-    } else if !args.height.is_some() && args.width.is_some() {
-        y = img.height() * (args.width.unwrap() / img.width());
-    }*/
+    let mut x = 50;
+    let mut y = 50;
+    //scale image if only one of the arguments is present
+    if args.height.is_some() && args.width.is_none() {
+        let target_h = args.height.unwrap();
+        let scale = target_h as f32 / img.height() as f32;
+        x = (img.width() as f32 * scale).round() as u32;
+        y = target_h;
+    } else if args.height.is_none() && args.width.is_some() {
+        let target_w = args.width.unwrap();
+        let scale = target_w as f32 / img.width() as f32;
+        x = target_w;
+        y = (img.height() as f32 * scale).round() as u32;
+    }
+    x = x * 2;
     let workingimage = (img.resize_exact(x, y, FilterType::Lanczos3)).to_luma8();
     let ascii_array = ASCII_RAMP.chars().collect::<Vec<char>>();
     let mut to_ret = String::new();
     for y in 0..workingimage.height() {
         for x in 0..workingimage.width() {
             let pixel = workingimage.get_pixel(x, y);
-            let brigthness = pixel.0[0];
-            let index = (brigthness as usize * ascii_array.len()) / 256;
+            let brightness = pixel.0[0];
+            let index: usize = if (args.inverted) {
+                ((255 - brightness) as usize * ascii_array.len()) / 256
+            } else {
+                ((brightness) as usize * ascii_array.len()) / 256
+            };
             to_ret.push(ascii_array[index.min(ascii_array.len() - 1)]);
         }
         to_ret.push('\n');
