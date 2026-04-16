@@ -32,15 +32,13 @@ fn main() {
     println!("Reading image file....");
     let img = match imageread(&args.file_name) {
         Ok(img) => img,
-        Err(e) => {
+        Err(_e) => {
             println!("Could not load or find image (:<)");
             return;
         }
     };
-    let mut x = 50;
-    let mut y = 50;
     //scale image if only one of the arguments is present
-    (x, y) = calculate_dimensions(&args.width, &args.height, &img);
+    let (x, y) = calculate_dimensions(&args.width, &args.height, &img);
     let scaled_image = img.resize_exact(x, y, FilterType::Lanczos3).to_rgba8();
     let workingimage = if args.quality {
         let scaled_image_cn = adjust_image_contrast(scaled_image.clone(), 1.5); // clone here
@@ -49,16 +47,9 @@ fn main() {
         DynamicImage::ImageRgba8(scaled_image.clone()).to_luma8()
     };
 
-    let to_ret = make_ascii(
-        &workingimage,
-        &scaled_image,
-        &args.color,
-        &args.inverted,
-        &x,
-        &y,
-    );
+    let to_ret = make_ascii(&workingimage, &scaled_image, &args.color, &args.inverted);
     println!("\n{}", to_ret);
-    if (args.output.is_some()) {
+    if args.output.is_some() {
         let o_path = args.output.unwrap();
         std::fs::write(&o_path, &to_ret).expect("Unable to write to the outputfile");
         println!("ASCII art saved to {}", o_path);
@@ -79,14 +70,7 @@ fn calculate_dimensions(x: &Option<u32>, y: &Option<u32>, img: &DynamicImage) ->
     }
     (100, 50) // default when both None or both Some
 }
-fn make_ascii(
-    workingimage: &GrayImage,
-    color_image: &RgbaImage,
-    c: &bool,
-    i: &bool,
-    x: &u32,
-    y: &u32,
-) -> String {
+fn make_ascii(workingimage: &GrayImage, color_image: &RgbaImage, c: &bool, i: &bool) -> String {
     let ascii_array = ASCII_RAMP.chars().collect::<Vec<char>>();
     let mut to_ret = String::new();
     for y in 0..workingimage.height() {
@@ -113,7 +97,7 @@ fn make_ascii(
     }
     return to_ret;
 }
-fn adjust_image_contrast(img: RgbaImage, factor: f32) -> (RgbaImage) {
+fn adjust_image_contrast(img: RgbaImage, factor: f32) -> RgbaImage {
     let mut new_img = img.clone();
     for (x, y, pixel) in img.enumerate_pixels() {
         let r = adjust_contrast(pixel[0], factor);
